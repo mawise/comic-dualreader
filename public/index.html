@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comic Reader Sync</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #111; color: white; display: flex; flex-direction: column; height: 100vh; overflow: hidden; font-family: sans-serif; }
+        #controls { padding: 10px; background: #333; display: flex; gap: 10px; align-items: center; z-index: 10; flex-shrink: 0; }
+        #comic-container { flex-grow: 1; position: relative; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        #comic-page { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .nav-overlay { position: absolute; top: 0; bottom: 0; width: 50%; cursor: pointer; z-index: 5; }
+        #nav-left { left: 0; }
+        #nav-right { right: 0; }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <input type="text" id="session-id" placeholder="Session ID">
+        <select id="role-select">
+            <option value="left">Left Page</option>
+            <option value="right">Right Page</option>
+        </select>
+        <button id="join-btn">Join / Create Session</button>
+        <input type="file" id="file-input" accept=".cbr,.cbz" disabled>
+        <span id="status">Status: Disconnected</span>
+    </div>
+    <div id="comic-container">
+        <img id="comic-page" src="" alt="Comic Page">
+        <div id="nav-left" class="nav-overlay"></div>
+        <div id="nav-right" class="nav-overlay"></div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="bundle.js"></script>
+</body>
+</html>
