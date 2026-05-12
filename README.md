@@ -10,7 +10,7 @@ You can easily run this application using Docker Compose.
    cd comic-dualreader
    ```
 
-2. Build and start the container:
+2. Start the container:
    ```bash
    docker-compose up -d
    ```
