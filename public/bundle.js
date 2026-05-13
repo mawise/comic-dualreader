@@ -11584,6 +11584,9 @@
       var currentPageIndex = 0;
       function updateDisplay(index) {
         if (index < 0 || index >= pages.length) return;
+        const instructions = document.getElementById("instructions");
+        if (instructions) instructions.style.display = "none";
+        comicPage.style.display = "block";
         currentPageIndex = index;
         comicPage.src = pages[currentPageIndex];
         document.getElementById("status").innerText = `Page ${currentPageIndex + 1} of ${pages.length}`;

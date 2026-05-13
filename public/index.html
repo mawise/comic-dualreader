@@ -8,10 +8,23 @@
         body { margin: 0; padding: 0; background-color: #111; color: white; display: flex; flex-direction: column; height: 100vh; overflow: hidden; font-family: sans-serif; }
         #controls { padding: 10px; background: #333; display: flex; gap: 10px; align-items: center; z-index: 10; flex-shrink: 0; }
         #comic-container { flex-grow: 1; position: relative; display: flex; justify-content: center; align-items: center; overflow: hidden; }
-        #comic-page { max-width: 100%; max-height: 100%; object-fit: contain; }
+        #comic-page { max-width: 100%; max-height: 100%; object-fit: contain; display: none; }
         .nav-overlay { position: absolute; top: 0; bottom: 0; width: 50%; cursor: pointer; z-index: 5; }
         #nav-left { left: 0; }
         #nav-right { right: 0; }
+        #instructions {
+            background-color: #222;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 600px;
+            margin: auto;
+            text-align: left;
+            line-height: 1.6;
+            z-index: 20;
+            position: absolute;
+        }
+        #instructions h2 { margin-top: 0; }
+        #instructions ol { margin-bottom: 0; padding-left: 20px; }
     </style>
 </head>
 <body>
@@ -26,6 +39,16 @@
         <span id="status">Status: Disconnected</span>
     </div>
     <div id="comic-container">
+        <div id="instructions">
+            <h2>How to connect and sync</h2>
+            <ol>
+                <li>Enter a unique Session ID and select "Left Page" or "Right Page"</li>
+                <li>Click "Join / Create Session"</li>
+                <li>On your second device/browser, enter the <b>same Session ID</b> but pick the <b>other page role</b></li>
+                <li>Click "Join / Create Session" on the second device</li>
+                <li>Once connected, upload a .cbr or .cbz file on either device to start reading!</li>
+            </ol>
+        </div>
         <img id="comic-page" src="" alt="Comic Page">
         <div id="nav-left" class="nav-overlay"></div>
         <div id="nav-right" class="nav-overlay"></div>
