@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "esbuild src/client.js --bundle --outfile=public/bundle.js --define:global=window --inject:./process-polyfill.js",
+    "test": "mocha test/test-app.js"
   },
   "repository": {
     "type": "git",
@@ -35,6 +36,9 @@
     "util": "^0.12.5"
   },
   "devDependencies": {
-    "esbuild": "^0.28.0"
+    "chai": "^6.2.2",
+    "esbuild": "^0.28.0",
+    "mocha": "^11.7.5",
+    "puppeteer": "^24.43.1"
   }
 }

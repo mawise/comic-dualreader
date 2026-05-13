@@ -34,9 +34,23 @@
     mod
   ));
 
+  // process-polyfill.js
+  var process;
+  var init_process_polyfill = __esm({
+    "process-polyfill.js"() {
+      process = {
+        nextTick: function(cb, ...args) {
+          setTimeout(() => cb(...args), 0);
+        },
+        env: {}
+      };
+    }
+  });
+
   // node_modules/ms/index.js
   var require_ms = __commonJS({
     "node_modules/ms/index.js"(exports, module) {
+      init_process_polyfill();
       var s = 1e3;
       var m = s * 60;
       var h = m * 60;
@@ -153,6 +167,7 @@
   // node_modules/debug/src/common.js
   var require_common = __commonJS({
     "node_modules/debug/src/common.js"(exports, module) {
+      init_process_polyfill();
       function setup(env) {
         createDebug.debug = createDebug;
         createDebug.default = createDebug;
@@ -330,6 +345,7 @@
   // node_modules/debug/src/browser.js
   var require_browser = __commonJS({
     "node_modules/debug/src/browser.js"(exports, module) {
+      init_process_polyfill();
       exports.formatArgs = formatArgs;
       exports.save = save;
       exports.load = load;
@@ -500,6 +516,7 @@
   // node_modules/get-browser-rtc/index.js
   var require_get_browser_rtc = __commonJS({
     "node_modules/get-browser-rtc/index.js"(exports, module) {
+      init_process_polyfill();
       module.exports = function getBrowserRTC() {
         if (typeof globalThis === "undefined") return null;
         var wrtc = {
@@ -517,6 +534,7 @@
   var require_base64_js = __commonJS({
     "node_modules/base64-js/index.js"(exports) {
       "use strict";
+      init_process_polyfill();
       exports.byteLength = byteLength;
       exports.toByteArray = toByteArray;
       exports.fromByteArray = fromByteArray;
@@ -617,6 +635,7 @@
   // node_modules/ieee754/index.js
   var require_ieee754 = __commonJS({
     "node_modules/ieee754/index.js"(exports) {
+      init_process_polyfill();
       exports.read = function(buffer, offset, isLE, mLen, nBytes) {
         var e, m;
         var eLen = nBytes * 8 - mLen - 1;
@@ -701,6 +720,7 @@
   var require_buffer = __commonJS({
     "node_modules/buffer/index.js"(exports) {
       "use strict";
+      init_process_polyfill();
       var base64 = require_base64_js();
       var ieee754 = require_ieee754();
       var customInspectSymbol = typeof Symbol === "function" && typeof Symbol["for"] === "function" ? Symbol["for"]("nodejs.util.inspect.custom") : null;
@@ -2292,6 +2312,7 @@
   // node_modules/safe-buffer/index.js
   var require_safe_buffer = __commonJS({
     "node_modules/safe-buffer/index.js"(exports, module) {
+      init_process_polyfill();
       var buffer = require_buffer();
       var Buffer2 = buffer.Buffer;
       function copyProps(src, dst) {
@@ -2350,13 +2371,14 @@
   var require_browser2 = __commonJS({
     "node_modules/randombytes/browser.js"(exports, module) {
       "use strict";
+      init_process_polyfill();
       var MAX_BYTES = 65536;
       var MAX_UINT32 = 4294967295;
       function oldBrowser() {
         throw new Error("Secure random number generation is not supported by this browser.\nUse Chrome, Firefox or Internet Explorer 11");
       }
       var Buffer2 = require_safe_buffer().Buffer;
-      var crypto = global.crypto || global.msCrypto;
+      var crypto = window.crypto || window.msCrypto;
       if (crypto && crypto.getRandomValues) {
         module.exports = randomBytes;
       } else {
@@ -2388,6 +2410,7 @@
   var require_events = __commonJS({
     "node_modules/events/events.js"(exports, module) {
       "use strict";
+      init_process_polyfill();
       var R = typeof Reflect === "object" ? Reflect : null;
       var ReflectApply = R && typeof R.apply === "function" ? R.apply : function ReflectApply2(target, receiver, args) {
         return Function.prototype.apply.call(target, receiver, args);
@@ -2756,6 +2779,7 @@
   // node_modules/simple-peer/node_modules/readable-stream/lib/internal/streams/stream-browser.js
   var require_stream_browser = __commonJS({
     "node_modules/simple-peer/node_modules/readable-stream/lib/internal/streams/stream-browser.js"(exports, module) {
+      init_process_polyfill();
       module.exports = require_events().EventEmitter;
     }
   });
@@ -2763,6 +2787,7 @@
   // (disabled):node_modules/util/util.js
   var require_util = __commonJS({
     "(disabled):node_modules/util/util.js"() {
+      init_process_polyfill();
     }
   });
 
@@ -2770,6 +2795,7 @@
   var require_buffer_list = __commonJS({
     "node_modules/simple-peer/node_modules/readable-stream/lib/internal/streams/buffer_list.js"(exports, module) {
       "use strict";
+      init_process_polyfill();
       function ownKeys(object, enumerableOnly) {
         var keys = Object.keys(object);
         if (Object.getOwnPropertySymbols) {
@@ -3012,6 +3038,7 @@
   var require_destroy = __commonJS({
     "node_modules/simple-peer/node_modules/readable-stream/lib/internal/streams/destroy.js"(exports, module) {
       "use strict";
+      init_process_polyfill();
       function destroy(err, cb) {
         var _this = this;
         var readableDestroyed = this._readableState && this._readableState.destroyed;
@@ -3101,6 +3128,7 @@
   var require_errors_browser = __commonJS({
     "node_modules/simple-peer/node_modules/readable-stream/errors-browser.js"(exports, module) {
       "use strict";
+      init_process_polyfill();
       function _inheritsLoose(subClass, superClass) {
         subClass.prototype = Object.create(superClass.prototype);
         subClass.prototype.constructor = subClass;
@@ -3210,6 +3238,7 @@
   var require_state = __commonJS({
     "node_modules/simple-peer/node_modules/readable-stream/lib/internal/streams/state.js"(exports, module) {
       "use strict";
+      init_process_polyfill();
       var ERR_INVALID_OPT_VALUE = require_errors_browser().codes.ERR_INVALID_OPT_VALUE;
       function highWaterMarkFrom(options, isDuplex, duplexKey) {
         return options.highWaterMark != null ? options.highWaterMark : isDuplex ? options[duplexKey] : null;
@@ -3234,6 +3263,7 @@
   // node_modules/inherits/inherits_browser.js
   var require_inherits_browser = __commonJS({
     "node_modules/inherits/inherits_browser.js"(exports, module) {
+      init_process_polyfill();
       if (typeof Object.create === "function") {
         module.exports = function inherits(ctor, superCtor) {
           if (superCtor) {
@@ -3266,6 +3296,7 @@
   // node_modules/util-deprecate/browser.js
   var require_browser3 = __commonJS({
     "node_modules/util-deprecate/browser.js"(exports, module) {
+      init_process_polyfill();
       module.exports = deprecate;
       function deprecate(fn, msg) {
         if (config("noDeprecation")) {
@@ -3289,11 +3320,11 @@
       }
       function config(name) {
         try {
-          if (!global.localStorage) return false;
+          if (!window.localStorage) return false;
         } catch (_) {
           return false;
         }
-        var val = global.localStorage[name];
+        var val = window.localStorage[name];
         if (null == val) return false;
         return String(val).toLowerCase() === "true";
       }
@@ -3304,6 +3335,7 @@
   var require_stream_writable = __commonJS({
     "node_modules/simple-peer/node_modules/readable-stream/lib/_stream_writable.js"(exports, module) {
       "use strict";
+      init_process_polyfill();
       module.exports = Writable;
       function CorkedRequest(state) {
         var _this = this;
@@ -3320,7 +3352,7 @@
       };
       var Stream = require_stream_browser();
       var Buffer2 = require_buffer().Buffer;
-      var OurUint8Array = (typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : {}).Uint8Array || function() {
+      var OurUint8Array = (typeof window !== "undefined" ? window : typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : {}).Uint8Array || function() {
       };
       function _uint8ArrayToBuffer(chunk) {
         return Buffer2.from(chunk);
@@ -3775,6 +3807,7 @@
   var require_stream_duplex = __commonJS({
     "node_modules/simple-peer/node_modules/readable-stream/lib/_stream_duplex.js"(exports, module) {
       "use strict";
+      init_process_polyfill();
       var objectKeys = Object.keys || function(obj) {
         var keys2 = [];
         for (var key in obj) keys2.push(key);
@@ -3868,6 +3901,7 @@
   var require_string_decoder = __commonJS({
     "node_modules/string_decoder/lib/string_decoder.js"(exports) {
       "use strict";
+      init_process_polyfill();
       var Buffer2 = require_safe_buffer().Buffer;
       var isEncoding = Buffer2.isEncoding || function(encoding) {
         encoding = "" + encoding;
@@ -4106,6 +4140,7 @@
   var require_end_of_stream = __commonJS({
     "node_modules/simple-peer/node_modules/readable-stream/lib/internal/streams/end-of-stream.js"(exports, module) {
       "use strict";
+      init_process_polyfill();
       var ERR_STREAM_PREMATURE_CLOSE = require_errors_browser().codes.ERR_STREAM_PREMATURE_CLOSE;
       function once(callback) {
         var called = false;
@@ -4195,6 +4230,7 @@
   var require_async_iterator = __commonJS({
     "node_modules/simple-peer/node_modules/readable-stream/lib/internal/streams/async_iterator.js"(exports, module) {
       "use strict";
+      init_process_polyfill();
       var _Object$setPrototypeO;
       function _defineProperty(obj, key, value) {
         key = _toPropertyKey(key);
@@ -4377,6 +4413,7 @@
   // node_modules/simple-peer/node_modules/readable-stream/lib/internal/streams/from-browser.js
   var require_from_browser = __commonJS({
     "node_modules/simple-peer/node_modules/readable-stream/lib/internal/streams/from-browser.js"(exports, module) {
+      init_process_polyfill();
       module.exports = function() {
         throw new Error("Readable.from is not available in the browser");
       };
@@ -4387,6 +4424,7 @@
   var require_stream_readable = __commonJS({
     "node_modules/simple-peer/node_modules/readable-stream/lib/_stream_readable.js"(exports, module) {
       "use strict";
+      init_process_polyfill();
       module.exports = Readable;
       var Duplex;
       Readable.ReadableState = ReadableState;
@@ -4396,7 +4434,7 @@
       };
       var Stream = require_stream_browser();
       var Buffer2 = require_buffer().Buffer;
-      var OurUint8Array = (typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : {}).Uint8Array || function() {
+      var OurUint8Array = (typeof window !== "undefined" ? window : typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : {}).Uint8Array || function() {
       };
       function _uint8ArrayToBuffer(chunk) {
         return Buffer2.from(chunk);
@@ -5120,6 +5158,7 @@
   var require_stream_transform = __commonJS({
     "node_modules/simple-peer/node_modules/readable-stream/lib/_stream_transform.js"(exports, module) {
       "use strict";
+      init_process_polyfill();
       module.exports = Transform;
       var _require$codes = require_errors_browser().codes;
       var ERR_METHOD_NOT_IMPLEMENTED = _require$codes.ERR_METHOD_NOT_IMPLEMENTED;
@@ -5221,6 +5260,7 @@
   var require_stream_passthrough = __commonJS({
     "node_modules/simple-peer/node_modules/readable-stream/lib/_stream_passthrough.js"(exports, module) {
       "use strict";
+      init_process_polyfill();
       module.exports = PassThrough;
       var Transform = require_stream_transform();
       require_inherits_browser()(PassThrough, Transform);
@@ -5238,6 +5278,7 @@
   var require_pipeline = __commonJS({
     "node_modules/simple-peer/node_modules/readable-stream/lib/internal/streams/pipeline.js"(exports, module) {
       "use strict";
+      init_process_polyfill();
       var eos;
       function once(callback) {
         var called = false;
@@ -5322,6 +5363,7 @@
   // node_modules/simple-peer/node_modules/readable-stream/readable-browser.js
   var require_readable_browser = __commonJS({
     "node_modules/simple-peer/node_modules/readable-stream/readable-browser.js"(exports, module) {
+      init_process_polyfill();
       exports = module.exports = require_stream_readable();
       exports.Stream = exports;
       exports.Readable = exports;
@@ -5337,8 +5379,9 @@
   // node_modules/queue-microtask/index.js
   var require_queue_microtask = __commonJS({
     "node_modules/queue-microtask/index.js"(exports, module) {
+      init_process_polyfill();
       var promise;
-      module.exports = typeof queueMicrotask === "function" ? queueMicrotask.bind(typeof window !== "undefined" ? window : global) : (cb) => (promise || (promise = Promise.resolve())).then(cb).catch((err) => setTimeout(() => {
+      module.exports = typeof queueMicrotask === "function" ? queueMicrotask.bind(typeof window !== "undefined" ? window : window) : (cb) => (promise || (promise = Promise.resolve())).then(cb).catch((err) => setTimeout(() => {
         throw err;
       }, 0));
     }
@@ -5348,6 +5391,7 @@
   var require_err_code = __commonJS({
     "node_modules/err-code/index.js"(exports, module) {
       "use strict";
+      init_process_polyfill();
       function assign(obj, props) {
         for (const key in props) {
           Object.defineProperty(obj, key, {
@@ -5391,6 +5435,7 @@
   // node_modules/simple-peer/index.js
   var require_simple_peer = __commonJS({
     "node_modules/simple-peer/index.js"(exports, module) {
+      init_process_polyfill();
       var debug = require_browser()("simple-peer");
       var getBrowserRTC = require_get_browser_rtc();
       var randombytes = require_browser2();
@@ -6240,11 +6285,12 @@
   // node_modules/jszip/dist/jszip.min.js
   var require_jszip_min = __commonJS({
     "node_modules/jszip/dist/jszip.min.js"(exports, module) {
+      init_process_polyfill();
       !(function(e) {
         if ("object" == typeof exports && "undefined" != typeof module) module.exports = e();
         else if ("function" == typeof define && define.amd) define([], e);
         else {
-          ("undefined" != typeof window ? window : "undefined" != typeof global ? global : "undefined" != typeof self ? self : this).JSZip = e();
+          ("undefined" != typeof window ? window : "undefined" != typeof window ? window : "undefined" != typeof self ? self : this).JSZip = e();
         }
       })(function() {
         return (function s(a, o, h) {
@@ -7336,7 +7382,7 @@
             l.exports = function(e3) {
               1 !== h.push(e3) || n || r();
             };
-          }).call(this, "undefined" != typeof global ? global : "undefined" != typeof self ? self : "undefined" != typeof window ? window : {});
+          }).call(this, "undefined" != typeof window ? window : "undefined" != typeof self ? self : "undefined" != typeof window ? window : {});
         }, {}], 37: [function(e, t, r) {
           "use strict";
           var i = e("immediate");
@@ -8597,7 +8643,7 @@
                 e4.source === r2 && "string" == typeof e4.data && 0 === e4.data.indexOf(a) && c(+e4.data.slice(a.length));
               }
             })("undefined" == typeof self ? void 0 === e2 ? this : e2 : self);
-          }).call(this, "undefined" != typeof global ? global : "undefined" != typeof self ? self : "undefined" != typeof window ? window : {});
+          }).call(this, "undefined" != typeof window ? window : "undefined" != typeof self ? self : "undefined" != typeof window ? window : {});
         }, {}] }, {}, [10])(10);
       });
     }
@@ -8607,6 +8653,7 @@
   var DataFile;
   var init_ExtractorData_helper = __esm({
     "node_modules/node-unrar-js/esm/js/ExtractorData.helper.js"() {
+      init_process_polyfill();
       DataFile = class {
         constructor(data) {
           this.buffers = [];
@@ -8675,6 +8722,7 @@
   var ERROR_CODE, ERROR_MSG, UnrarError, Extractor;
   var init_Extractor = __esm({
     "node_modules/node-unrar-js/esm/js/Extractor.js"() {
+      init_process_polyfill();
       ERROR_CODE = {
         0: "ERAR_SUCCESS",
         10: "ERAR_END_ARCHIVE",
@@ -8865,6 +8913,7 @@
   var ExtractorData;
   var init_ExtractorData = __esm({
     "node_modules/node-unrar-js/esm/js/ExtractorData.js"() {
+      init_process_polyfill();
       init_ExtractorData_helper();
       init_Extractor();
       ExtractorData = class extends Extractor {
@@ -8962,6 +9011,7 @@
   var Module, unrar_default;
   var init_unrar = __esm({
     "node_modules/node-unrar-js/esm/js/unrar.js"() {
+      init_process_polyfill();
       Module = (() => {
         var _scriptDir = typeof document !== "undefined" && document.currentScript ? document.currentScript.src : void 0;
         return (function(Module2) {
@@ -11391,6 +11441,7 @@
   var unrar;
   var init_unrar_singleton = __esm({
     "node_modules/node-unrar-js/esm/js/unrar.singleton.js"() {
+      init_process_polyfill();
       init_unrar();
     }
   });
@@ -11404,6 +11455,7 @@
   }
   var init_index_esm = __esm({
     "node_modules/node-unrar-js/esm/index.esm.js"() {
+      init_process_polyfill();
       init_ExtractorData();
       init_unrar_singleton();
       init_Extractor();
@@ -11445,6 +11497,7 @@
   var import_jszip;
   var init_extract = __esm({
     "src/extract.js"() {
+      init_process_polyfill();
       import_jszip = __toESM(require_jszip_min());
       init_index_esm();
     }
@@ -11493,12 +11546,14 @@
   }
   var init_imageProcessor = __esm({
     "src/imageProcessor.js"() {
+      init_process_polyfill();
     }
   });
 
   // src/client.js
   var require_client = __commonJS({
     "src/client.js"() {
+      init_process_polyfill();
       var import_simple_peer = __toESM(require_simple_peer());
       init_extract();
       init_imageProcessor();
@@ -11561,12 +11616,12 @@
           console.log(`Processed ${pages.length} total pages.`);
           document.getElementById("status").innerText = `Status: Ready (${pages.length} pages)`;
           if (pages.length > 0) {
-            updateDisplay(role === "left" ? 0 : 1);
             if (peer && peer.connected) {
               console.log("Sending pages to peer...");
               sendPagesInChunks(peer, pages);
               peer.send(JSON.stringify({ type: "sync", index: 0 }));
             }
+            updateDisplay(role === "left" ? 0 : 1);
           }
         } catch (err) {
           console.error("Extraction failed:", err);
@@ -11607,13 +11662,21 @@
         alert("Session is full (max 2 devices).");
         document.getElementById("status").innerText = "Session Full";
       });
-      socket.on("ready", (initiatorSocketId) => {
-        console.log("Room ready. Initiating peer connection...");
-        peer = new import_simple_peer.default({
-          initiator: true,
-          trickle: false
-        });
-        setupPeerListeners(peer);
+      socket.on("ready", (data) => {
+        const isInitiator = socket.id === data.initiatorSocketId;
+        console.log(`Room ready. Am I initiator? ${isInitiator} (my id: ${socket.id}, initiator id: ${data.initiatorSocketId})`);
+        if (peer) {
+          peer.destroy();
+          peer = null;
+        }
+        if (isInitiator) {
+          console.log("Initiating peer connection...");
+          peer = new import_simple_peer.default({
+            initiator: true,
+            trickle: false
+          });
+          setupPeerListeners(peer);
+        }
       });
       socket.on("signal", (data) => {
         if (!peer) {
@@ -11646,7 +11709,7 @@
               pages[msg.chunkIndex] = msg.pageData;
               if (msg.isLast) {
                 console.log("Received all pages from peer");
-                document.getElementById("status").innerText = `Status: Received ${pages.length} pages`;
+                document.getElementById("status").innerText = `Received ${pages.length} pages`;
                 if (pages[0]) {
                   updateDisplay(role === "left" ? 0 : 1);
                 }

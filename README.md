@@ -21,3 +21,11 @@ To stop the container, run:
 ```bash
 docker-compose down
 ```
+
+## Local Development
+To run locally without Docker:
+```bash
+npm install
+npm run build
+node server.js
+```

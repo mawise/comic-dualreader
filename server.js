@@ -24,8 +24,11 @@ io.on('connection', (socket) => {
         console.log(`Socket ${socket.id} joined session ${sessionId}`);
 
         // If this is the second person joining, tell them to initiate connection
-        if (room && room.size === 2) {
-            io.to(sessionId).emit('ready', socket.id);
+        // We have to query the room AFTER the socket has joined because room size includes the new socket.
+        const currentRoom = io.sockets.adapter.rooms.get(sessionId);
+        if (currentRoom && currentRoom.size === 2) {
+            // Tell the room that it is ready, but specifically designate the second socket as the initiator
+            io.to(sessionId).emit('ready', { initiatorSocketId: socket.id });
         }
     });
 
