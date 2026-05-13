@@ -4,3 +4,5 @@ export const process = {
   },
   env: {}
 };
+
+export const global = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : this;
