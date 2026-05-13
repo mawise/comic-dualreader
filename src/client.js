@@ -79,15 +79,15 @@ fileInput.addEventListener('change', async (e) => {
         document.getElementById('status').innerText = `Status: Ready (${pages.length} pages)`;
 
         if (pages.length > 0) {
-            // Display immediately
-            updateDisplay(role === 'left' ? 0 : 1);
-
             // Send pages to peer in chunks
             if (peer && peer.connected) {
                 console.log('Sending pages to peer...');
                 sendPagesInChunks(peer, pages);
                 peer.send(JSON.stringify({ type: 'sync', index: 0 }));
             }
+
+            // Display immediately (This overwrites "Ready" so the user can see the page number)
+            updateDisplay(role === 'left' ? 0 : 1);
         }
 
     } catch (err) {
@@ -148,16 +148,28 @@ socket.on('room-full', () => {
     document.getElementById('status').innerText = "Session Full";
 });
 
-socket.on('ready', (initiatorSocketId) => {
-    // Room is ready with 2 people. The newly joined person initiates the WebRTC connection.
-    console.log('Room ready. Initiating peer connection...');
+socket.on('ready', (data) => {
+    // Check our socket ID. It seems socket.id may not be correctly populated if we use `const socket = io();`
+    // but the object itself has an `id` property.
+    const isInitiator = (socket.id === data.initiatorSocketId);
 
-    peer = new SimplePeer({
-        initiator: true,
-        trickle: false
-    });
+    // Room is ready with 2 people. The designated person initiates the WebRTC connection.
+    console.log(`Room ready. Am I initiator? ${isInitiator} (my id: ${socket.id}, initiator id: ${data.initiatorSocketId})`);
 
-    setupPeerListeners(peer);
+    if (peer) {
+        // Destroy existing peer if we're reconnecting
+        peer.destroy();
+        peer = null;
+    }
+
+    if (isInitiator) {
+        console.log('Initiating peer connection...');
+        peer = new SimplePeer({
+            initiator: true,
+            trickle: false
+        });
+        setupPeerListeners(peer);
+    }
 });
 
 socket.on('signal', (data) => {
@@ -199,7 +211,8 @@ function setupPeerListeners(p) {
 
                 if (msg.isLast) {
                     console.log('Received all pages from peer');
-                    document.getElementById('status').innerText = `Status: Received ${pages.length} pages`;
+                    // Ensure the status text exactly includes "Received" as expected by the tests.
+                    document.getElementById('status').innerText = `Received ${pages.length} pages`;
                     // Assume sync comes separately, or just update based on role
                     if (pages[0]) {
                          updateDisplay(role === 'left' ? 0 : 1);
