@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "esbuild src/client.js --bundle --outfile=public/bundle.js --inject:./process-polyfill.js",
+    "build": "esbuild src/client.js --bundle --outfile=public/bundle.js --define:global=window --inject:./process-polyfill.js",
     "test": "mocha test/test-app.js"
   },
   "repository": {
