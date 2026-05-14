@@ -8,7 +8,7 @@ RUN npm install
 
 COPY . .
 
-RUN npx esbuild src/client.js --bundle --outfile=public/bundle.js
+RUN npm run build
 
 EXPOSE 3000
 
