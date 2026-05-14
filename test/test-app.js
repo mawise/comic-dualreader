@@ -41,7 +41,87 @@ describe('Comic Dual Reader E2E', function () {
         if (serverProcess) serverProcess.kill();
     });
 
+    it('should connect two clients and synchronize page turns with .cbr files', async function () {
+        // Refresh pages
+        await page1.goto('about:blank');
+        await page2.goto('about:blank');
+
+        const sessionId = 'test-session-cbr-123';
+
+        // Client 1 connects
+        await page1.goto('http://localhost:3000');
+        await page1.type('#session-id', sessionId);
+        await page1.select('#role-select', 'left');
+        await page1.click('#join-btn');
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Client 2 connects
+        await page2.goto('http://localhost:3000');
+        await page2.type('#session-id', sessionId);
+        await page2.select('#role-select', 'right');
+        await page2.click('#join-btn');
+
+        // Wait for connection to be established
+        await page1.waitForFunction(
+            () => document.getElementById('status').innerText.includes('Peer Connected'),
+            { timeout: 10000 }
+        );
+        await page2.waitForFunction(
+            () => document.getElementById('status').innerText.includes('Peer Connected'),
+            { timeout: 10000 }
+        );
+
+        // Upload file
+        const cbrBase64 = 'UmFyIRoHAQAzkrXlCgEFBgAFAQGAgADqrE5BIwIDC8QABMQAtIMCr8jQV4AAAQUxLnBuZwoDEywTBmoeLyYgiVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYIIYGIZoIwIDC8QABMQAtIMCr8jQV4AAAQUyLnBuZwoDEywTBmoeLyYgiVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYIKJie7GIwIDC8QABMQAtIMCr8jQV4AAAQUzLnBuZwoDEywTBmoeLyYgiVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYIL8cRc7IwIDC8QABMQAtIMCr8jQV4AAAQU0LnBuZwoDEywTBmoeLyYgiVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYIIdd1ZRAwUEAA==';
+        const cbrPath = path.resolve(__dirname, 'test.cbr');
+        fs.writeFileSync(cbrPath, Buffer.from(cbrBase64, 'base64'));
+
+        const fileInput = await page1.$('#file-input');
+        await fileInput.uploadFile(cbrPath);
+
+        // Let's check page2
+        await page2.waitForFunction(
+            () => document.getElementById('status').innerText.includes('Received') || document.getElementById('status').innerText.includes('Page '),
+            { timeout: 10000 }
+        );
+
+        // Wait a small moment for syncing to finish
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Verify page1 is on page 1
+        const status1 = await page1.$eval('#status', el => el.innerText);
+        expect(status1).to.include('Page 1');
+
+        // Verify image source is populated
+        const imgSrc1 = await page1.$eval('#comic-page', el => el.src);
+        expect(imgSrc1).to.not.be.empty;
+
+        // Click next on page 1
+        await page1.click('#nav-right');
+
+        // Page 1 should go to index 2 (Page 3) because it's left side (shows 0, 2, 4)
+        await page1.waitForFunction(
+            () => document.getElementById('status').innerText.includes('Page 3'),
+            { timeout: 5000 }
+        );
+
+        // Page 2 should go to index 3 (Page 4) because it's right side (shows 1, 3, 5)
+        await page2.waitForFunction(
+            () => document.getElementById('status').innerText.includes('Page 4'),
+            { timeout: 5000 }
+        );
+
+        // Verify page2 is on page 4
+        const status2 = await page2.$eval('#status', el => el.innerText);
+        expect(status2).to.include('Page 4');
+    });
+
     it('should connect two clients and synchronize page turns', async function () {
+        // Refresh pages
+        await page1.goto('about:blank');
+        await page2.goto('about:blank');
+
         const sessionId = 'test-session-123';
 
         // Client 1 connects

@@ -24,10 +24,10 @@ export async function extractFiles(file) {
         }});
 
         for (const file of files) {
-            if (file.fileData) {
+            if (file.extraction) {
                 extractedFiles.push({
                     filename: file.fileHeader.name,
-                    buffer: file.fileData.buffer
+                    buffer: file.extraction.buffer
                 });
             }
         }
