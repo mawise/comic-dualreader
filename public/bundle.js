@@ -11483,10 +11483,13 @@
         return !fileHeader.flags.directory && imageRegex.test(fileHeader.name);
       } });
       for (const file2 of files) {
-        if (file2.fileData) {
+        if (file2.extraction) {
           extractedFiles.push({
             filename: file2.fileHeader.name,
-            buffer: file2.fileData.buffer
+            buffer: file2.extraction.buffer.slice(
+              file2.extraction.byteOffset,
+              file2.extraction.byteOffset + file2.extraction.byteLength
+            )
           });
         }
       }
