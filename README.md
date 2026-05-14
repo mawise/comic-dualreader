@@ -1,5 +1,7 @@
 # comic-dualreader
 
+Read a comic (in `.cbr` or `.cbz` format) on two web browsers.  Useful for displaying opposite pages on a pair of tablets side-by-side.
+
 ## Running with Docker Compose
 
 You can easily run this application using Docker Compose.
