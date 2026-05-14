@@ -14,7 +14,7 @@ describe('Comic Dual Reader E2E', function () {
     before(async function () {
         // Build the bundle correctly
         const execSync = require('child_process').execSync;
-        execSync('npx esbuild src/client.js --bundle --outfile=public/bundle.js --define:global=window --inject:./process-polyfill.js');
+        execSync('npm run build');
 
         // Start the server
         console.log('Starting server...');
