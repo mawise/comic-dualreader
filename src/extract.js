@@ -27,7 +27,10 @@ export async function extractFiles(file) {
             if (file.extraction) {
                 extractedFiles.push({
                     filename: file.fileHeader.name,
-                    buffer: file.extraction.buffer
+                    buffer: file.extraction.buffer.slice(
+                        file.extraction.byteOffset,
+                        file.extraction.byteOffset + file.extraction.byteLength
+                    )
                 });
             }
         }
