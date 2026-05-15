@@ -9,7 +9,7 @@ async function run() {
         arrayBuffer: async () => new Uint8Array(buffer).buffer
     };
 
-    let cbrExtracted = await extractFiles(cbrFile);
+    const { images: cbrExtracted } = await extractFiles(cbrFile);
     if (cbrExtracted.length !== 4) throw new Error("CBR length failed");
     cbrExtracted.forEach(f => {
         if (f.buffer.byteLength !== 68) throw new Error("CBR byteLength failed");
@@ -27,7 +27,7 @@ async function run() {
         name: 'test.cbz',
         arrayBuffer: async () => new Uint8Array(cbzContent).buffer
     };
-    let cbzExtracted = await extractFiles(cbzFile);
+    const { images: cbzExtracted } = await extractFiles(cbzFile);
     if (cbzExtracted.length !== 2) throw new Error("CBZ length failed");
     cbzExtracted.forEach(f => {
         if (f.buffer.byteLength !== 68) throw new Error("CBZ byteLength failed");

@@ -66,14 +66,69 @@ fileInput.addEventListener('change', async (e) => {
         console.log(`Extracting ${file.name}...`);
         document.getElementById('status').innerText = 'Status: Extracting...';
 
-        const extractedFiles = await extractFiles(file);
-        console.log(`Extracted ${extractedFiles.length} files.`);
+        const { images, xmlBuffer } = await extractFiles(file);
+        console.log(`Extracted ${images.length} images.`);
         document.getElementById('status').innerText = `Status: Processing images...`;
 
-        pages = [];
-        for (const f of extractedFiles) {
+        let comicInfo = null;
+        if (xmlBuffer) {
             try {
-                const newPages = await processImage(f.buffer);
+                const decoder = new TextDecoder('utf-8');
+                const xmlString = decoder.decode(xmlBuffer);
+                const parser = new DOMParser();
+                comicInfo = parser.parseFromString(xmlString, "text/xml");
+            } catch (err) {
+                console.warn("Failed to parse ComicInfo.xml", err);
+            }
+        }
+
+        function createBlankPage() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1;
+            canvas.height = 1;
+            return canvas.toDataURL('image/jpeg', 0.9);
+        }
+
+        pages = [];
+        for (let i = 0; i < images.length; i++) {
+            const f = images[i];
+
+            let isFrontCover = false;
+            let isDoublePage = false;
+
+            if (comicInfo) {
+                const pageElements = comicInfo.getElementsByTagName("Page");
+                for (let p = 0; p < pageElements.length; p++) {
+                    if (parseInt(pageElements[p].getAttribute("Image"), 10) === i) {
+                        if (pageElements[p].getAttribute("Type") === "FrontCover") {
+                            isFrontCover = true;
+                        }
+                        if (pageElements[p].getAttribute("Type") === "DoublePage") {
+                            isDoublePage = true;
+                        }
+                    }
+                }
+            } else {
+                if (i === 0) {
+                    isFrontCover = true;
+                }
+            }
+
+            try {
+                const newPages = await processImage(f.buffer, isDoublePage);
+
+                if (isFrontCover) {
+                    if (pages.length % 2 === 0) {
+                        pages.push(createBlankPage());
+                    }
+                }
+
+                if (newPages.length === 2) {
+                    if (pages.length % 2 !== 0) {
+                        pages.push(createBlankPage());
+                    }
+                }
+
                 pages.push(...newPages);
             } catch (err) {
                 console.warn(`Failed to process ${f.filename}`, err);
