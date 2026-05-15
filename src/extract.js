@@ -6,13 +6,13 @@ export async function extractFiles(file) {
     const isZip = file.name.toLowerCase().endsWith('.cbz') || file.name.toLowerCase().endsWith('.zip');
     const isRar = file.name.toLowerCase().endsWith('.cbr') || file.name.toLowerCase().endsWith('.rar');
 
-    const imageRegex = /\.(jpg|jpeg|png|gif|webp)$/i;
+    const fileRegex = /\.(jpg|jpeg|png|gif|webp|xml)$/i;
     let extractedFiles = [];
 
     if (isZip) {
         const zip = await JSZip.loadAsync(arrayBuffer);
         for (const [filename, fileData] of Object.entries(zip.files)) {
-            if (!fileData.dir && imageRegex.test(filename)) {
+            if (!fileData.dir && fileRegex.test(filename)) {
                 const buffer = await fileData.async('arraybuffer');
                 extractedFiles.push({ filename, buffer });
             }
@@ -20,7 +20,7 @@ export async function extractFiles(file) {
     } else if (isRar) {
         const extractor = await createExtractorFromData({ data: new Uint8Array(arrayBuffer) });
         const { files } = extractor.extract({ files: (fileHeader) => {
-            return !fileHeader.flags.directory && imageRegex.test(fileHeader.name);
+            return !fileHeader.flags.directory && fileRegex.test(fileHeader.name);
         }});
 
         for (const file of files) {
@@ -36,8 +36,21 @@ export async function extractFiles(file) {
         }
     }
 
-    // Sort by filename alphabetically
-    extractedFiles.sort((a, b) => a.filename.localeCompare(b.filename));
+    let images = [];
+    let xmlBuffer = null;
 
-    return extractedFiles;
+    for (const f of extractedFiles) {
+        if (f.filename.toLowerCase().endsWith('.xml')) {
+            if (f.filename.toLowerCase().includes('comicinfo.xml')) {
+                xmlBuffer = f.buffer;
+            }
+        } else {
+            images.push(f);
+        }
+    }
+
+    // Sort by filename alphabetically
+    images.sort((a, b) => a.filename.localeCompare(b.filename));
+
+    return { images, xmlBuffer };
 }

@@ -1,13 +1,13 @@
 // src/imageProcessor.js
-export async function processImage(arrayBuffer) {
+export async function processImage(arrayBuffer, forceDoublePage = false) {
     return new Promise((resolve, reject) => {
         const blob = new Blob([arrayBuffer]);
         const url = URL.createObjectURL(blob);
         const img = new Image();
 
         img.onload = () => {
-            // Check if landscape (width > height)
-            if (img.width > img.height) {
+            // Check if landscape (width > height) or forced double page
+            if (img.width > img.height || forceDoublePage) {
                 // Split into two pages
                 const halfWidth = Math.floor(img.width / 2);
 

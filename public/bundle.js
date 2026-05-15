@@ -11467,12 +11467,12 @@
     const arrayBuffer = await file.arrayBuffer();
     const isZip = file.name.toLowerCase().endsWith(".cbz") || file.name.toLowerCase().endsWith(".zip");
     const isRar = file.name.toLowerCase().endsWith(".cbr") || file.name.toLowerCase().endsWith(".rar");
-    const imageRegex = /\.(jpg|jpeg|png|gif|webp)$/i;
+    const fileRegex = /\.(jpg|jpeg|png|gif|webp|xml)$/i;
     let extractedFiles = [];
     if (isZip) {
       const zip = await import_jszip.default.loadAsync(arrayBuffer);
       for (const [filename, fileData] of Object.entries(zip.files)) {
-        if (!fileData.dir && imageRegex.test(filename)) {
+        if (!fileData.dir && fileRegex.test(filename)) {
           const buffer = await fileData.async("arraybuffer");
           extractedFiles.push({ filename, buffer });
         }
@@ -11480,7 +11480,7 @@
     } else if (isRar) {
       const extractor = await createExtractorFromData({ data: new Uint8Array(arrayBuffer) });
       const { files } = extractor.extract({ files: (fileHeader) => {
-        return !fileHeader.flags.directory && imageRegex.test(fileHeader.name);
+        return !fileHeader.flags.directory && fileRegex.test(fileHeader.name);
       } });
       for (const file2 of files) {
         if (file2.extraction) {
@@ -11494,8 +11494,19 @@
         }
       }
     }
-    extractedFiles.sort((a, b) => a.filename.localeCompare(b.filename));
-    return extractedFiles;
+    let images = [];
+    let xmlBuffer = null;
+    for (const f of extractedFiles) {
+      if (f.filename.toLowerCase().endsWith(".xml")) {
+        if (f.filename.toLowerCase().includes("comicinfo.xml")) {
+          xmlBuffer = f.buffer;
+        }
+      } else {
+        images.push(f);
+      }
+    }
+    images.sort((a, b) => a.filename.localeCompare(b.filename));
+    return { images, xmlBuffer };
   }
   var import_jszip;
   var init_extract = __esm({
@@ -11507,13 +11518,13 @@
   });
 
   // src/imageProcessor.js
-  async function processImage(arrayBuffer) {
+  async function processImage(arrayBuffer, forceDoublePage = false) {
     return new Promise((resolve, reject) => {
       const blob = new Blob([arrayBuffer]);
       const url = URL.createObjectURL(blob);
       const img = new Image();
       img.onload = () => {
-        if (img.width > img.height) {
+        if (img.width > img.height || forceDoublePage) {
           const halfWidth = Math.floor(img.width / 2);
           const canvasLeft = document.createElement("canvas");
           canvasLeft.width = halfWidth;
@@ -11605,15 +11616,62 @@
         const file = e.target.files[0];
         if (!file) return;
         try {
+          let createBlankPage = function() {
+            const canvas = document.createElement("canvas");
+            canvas.width = 1;
+            canvas.height = 1;
+            return canvas.toDataURL("image/jpeg", 0.9);
+          };
           console.log(`Extracting ${file.name}...`);
           document.getElementById("status").innerText = "Status: Extracting...";
-          const extractedFiles = await extractFiles(file);
-          console.log(`Extracted ${extractedFiles.length} files.`);
+          const { images, xmlBuffer } = await extractFiles(file);
+          console.log(`Extracted ${images.length} images.`);
           document.getElementById("status").innerText = `Status: Processing images...`;
-          pages = [];
-          for (const f of extractedFiles) {
+          let comicInfo = null;
+          if (xmlBuffer) {
             try {
-              const newPages = await processImage(f.buffer);
+              const decoder = new TextDecoder("utf-8");
+              const xmlString = decoder.decode(xmlBuffer);
+              const parser = new DOMParser();
+              comicInfo = parser.parseFromString(xmlString, "text/xml");
+            } catch (err) {
+              console.warn("Failed to parse ComicInfo.xml", err);
+            }
+          }
+          pages = [];
+          for (let i = 0; i < images.length; i++) {
+            const f = images[i];
+            let isFrontCover = false;
+            let isDoublePage = false;
+            if (comicInfo) {
+              const pageElements = comicInfo.getElementsByTagName("Page");
+              for (let p = 0; p < pageElements.length; p++) {
+                if (parseInt(pageElements[p].getAttribute("Image"), 10) === i) {
+                  if (pageElements[p].getAttribute("Type") === "FrontCover") {
+                    isFrontCover = true;
+                  }
+                  if (pageElements[p].getAttribute("Type") === "DoublePage") {
+                    isDoublePage = true;
+                  }
+                }
+              }
+            } else {
+              if (i === 0) {
+                isFrontCover = true;
+              }
+            }
+            try {
+              const newPages = await processImage(f.buffer, isDoublePage);
+              if (isFrontCover) {
+                if (pages.length % 2 === 0) {
+                  pages.push(createBlankPage());
+                }
+              }
+              if (newPages.length === 2) {
+                if (pages.length % 2 !== 0) {
+                  pages.push(createBlankPage());
+                }
+              }
               pages.push(...newPages);
             } catch (err) {
               console.warn(`Failed to process ${f.filename}`, err);
