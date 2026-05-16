@@ -11670,7 +11670,7 @@
             }
             try {
               const newPages = await processImage(f.buffer, isDoublePage);
-              if (isFrontCover) {
+              if (isFrontCover && newPages.length === 1) {
                 if (pages.length % 2 === 0) {
                   pages.push(createBlankPage());
                 }
