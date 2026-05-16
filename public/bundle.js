@@ -11778,13 +11778,19 @@
             const msg = JSON.parse(data);
             if (msg.type === "page-chunk") {
               console.log(`Received page chunk ${msg.chunkIndex}`);
+              if (msg.chunkIndex === 0) {
+                pages = [];
+              }
               pages[msg.chunkIndex] = msg.pageData;
+              if (msg.chunkIndex === 0 && role === "left") {
+                updateDisplay(0);
+              } else if (msg.chunkIndex === 1 && role === "right") {
+                updateDisplay(1);
+              }
               if (msg.isLast) {
                 console.log("Received all pages from peer");
                 document.getElementById("status").innerText = `Received ${pages.length} pages`;
-                if (pages[0]) {
-                  updateDisplay(role === "left" ? 0 : 1);
-                }
+                updateDisplay(role === "left" ? 0 : 1);
               }
             } else if (msg.type === "sync") {
               const peerIndex = msg.index;
