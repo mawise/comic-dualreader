@@ -186,6 +186,68 @@ describe('Comic Dual Reader E2E', function () {
         expect(imgSrc1).to.include('data:image/jpeg;base64,');
     });
 
+
+    it('should show the first page on both browsers immediately after upload', async function () {
+        await page1.goto('about:blank');
+        await page2.goto('about:blank');
+
+        const sessionId = 'test-session-initial-display-123';
+
+        await page1.goto('http://localhost:3000');
+        await page1.type('#session-id', sessionId);
+        await page1.select('#role-select', 'left');
+        await page1.click('#join-btn');
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        await page2.goto('http://localhost:3000');
+        await page2.type('#session-id', sessionId);
+        await page2.select('#role-select', 'right');
+        await page2.click('#join-btn');
+
+        await page1.waitForFunction(
+            () => document.getElementById('status').innerText.includes('Peer Connected'),
+            { timeout: 10000 }
+        );
+        await page2.waitForFunction(
+            () => document.getElementById('status').innerText.includes('Peer Connected'),
+            { timeout: 10000 }
+        );
+
+        const jszip = require('jszip');
+        const zip = new jszip();
+        const pixelData = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
+        zip.file("1.png", pixelData);
+        zip.file("2.png", pixelData);
+        const path = require('path');
+        const content = await zip.generateAsync({type:"nodebuffer"});
+        const cbzPath = path.resolve(__dirname, 'test-initial.cbz');
+        fs.writeFileSync(cbzPath, content);
+
+        const fileInput = await page1.$('#file-input');
+        await fileInput.uploadFile(cbzPath);
+
+        await page2.waitForFunction(
+            () => document.getElementById('status').innerText.includes('Received') || document.getElementById('status').innerText.includes('Page '),
+            { timeout: 10000 }
+        );
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        const display1 = await page1.$eval('#comic-page', el => window.getComputedStyle(el).display);
+        const display2 = await page2.$eval('#comic-page', el => window.getComputedStyle(el).display);
+
+        const expect = require('chai').expect;
+        expect(display1).to.equal('block');
+        expect(display2).to.equal('block');
+
+        const src1 = await page1.$eval('#comic-page', el => el.src);
+        const src2 = await page2.$eval('#comic-page', el => el.src);
+
+        expect(src1.length).to.be.greaterThan(100);
+        expect(src2.length).to.be.greaterThan(100);
+    });
+
     it('should connect two clients and synchronize page turns', async function () {
         // Refresh pages
         await page1.goto('about:blank');

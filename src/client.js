@@ -277,16 +277,28 @@ function setupPeerListeners(p) {
             if (msg.type === 'page-chunk') {
                 // Collect page chunk
                 console.log(`Received page chunk ${msg.chunkIndex}`);
+
+                // Clear existing pages when receiving a new comic
+                if (msg.chunkIndex === 0) {
+                    pages = [];
+                }
+
                 pages[msg.chunkIndex] = msg.pageData;
+
+                // Update display immediately for the first respective images
+                if (msg.chunkIndex === 0 && role === 'left') {
+                    updateDisplay(0);
+                } else if (msg.chunkIndex === 1 && role === 'right') {
+                    updateDisplay(1);
+                }
 
                 if (msg.isLast) {
                     console.log('Received all pages from peer');
                     // Ensure the status text exactly includes "Received" as expected by the tests.
                     document.getElementById('status').innerText = `Received ${pages.length} pages`;
-                    // Assume sync comes separately, or just update based on role
-                    if (pages[0]) {
-                         updateDisplay(role === 'left' ? 0 : 1);
-                    }
+
+                    // Final display update to reflect correct total page count or handle 1-page covers on the right
+                    updateDisplay(role === 'left' ? 0 : 1);
                 }
             } else if (msg.type === 'sync') {
                 const peerIndex = msg.index;
