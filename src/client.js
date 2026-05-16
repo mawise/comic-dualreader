@@ -127,7 +127,7 @@ fileInput.addEventListener('change', async (e) => {
             try {
                 const newPages = await processImage(f.buffer, isDoublePage);
 
-                if (isFrontCover) {
+                if (isFrontCover && newPages.length < 2) {
                     if (pages.length % 2 === 0) {
                         pages.push(createBlankPage());
                     }
