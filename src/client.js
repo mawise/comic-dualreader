@@ -37,7 +37,7 @@ let pages = [];
 let currentPageIndex = 0;
 
 function updateDisplay(index) {
-    if (index < 0 || index >= pages.length) return;
+    if (index < 0) return;
 
     // Hide instructions and show comic page when a page is loaded
     const instructions = document.getElementById('instructions');
@@ -45,8 +45,18 @@ function updateDisplay(index) {
     comicPage.style.display = 'block';
 
     currentPageIndex = index;
-    comicPage.src = pages[currentPageIndex];
-    document.getElementById('status').innerText = `Page ${currentPageIndex + 1} of ${pages.length}`;
+
+    if (currentPageIndex >= pages.length) {
+        // Render a blank page if index is out of bounds
+        const canvas = document.createElement('canvas');
+        canvas.width = 1;
+        canvas.height = 1;
+        comicPage.src = canvas.toDataURL('image/jpeg', 0.9);
+        document.getElementById('status').innerText = `Page ${pages.length > 0 ? pages.length : 0} of ${pages.length}`;
+    } else {
+        comicPage.src = pages[currentPageIndex];
+        document.getElementById('status').innerText = `Page ${currentPageIndex + 1} of ${pages.length}`;
+    }
 
     // Buffer next and previous pages
     const preloadIndexes = [index - 1, index + 1, index - 2, index + 2];

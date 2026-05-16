@@ -11597,13 +11597,21 @@
       var pages = [];
       var currentPageIndex = 0;
       function updateDisplay(index) {
-        if (index < 0 || index >= pages.length) return;
+        if (index < 0) return;
         const instructions = document.getElementById("instructions");
         if (instructions) instructions.style.display = "none";
         comicPage.style.display = "block";
         currentPageIndex = index;
-        comicPage.src = pages[currentPageIndex];
-        document.getElementById("status").innerText = `Page ${currentPageIndex + 1} of ${pages.length}`;
+        if (currentPageIndex >= pages.length) {
+          const canvas = document.createElement("canvas");
+          canvas.width = 1;
+          canvas.height = 1;
+          comicPage.src = canvas.toDataURL("image/jpeg", 0.9);
+          document.getElementById("status").innerText = `Page ${pages.length > 0 ? pages.length : 0} of ${pages.length}`;
+        } else {
+          comicPage.src = pages[currentPageIndex];
+          document.getElementById("status").innerText = `Page ${currentPageIndex + 1} of ${pages.length}`;
+        }
         const preloadIndexes = [index - 1, index + 1, index - 2, index + 2];
         preloadIndexes.forEach((idx) => {
           if (idx >= 0 && idx < pages.length) {
