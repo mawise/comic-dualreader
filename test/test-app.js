@@ -420,4 +420,79 @@ describe('Comic Dual Reader E2E', function () {
         expect(status1).to.include('of 2');
         expect(status2).to.include('of 2');
     });
+
+    it('should correctly handle odd number of pages when reaching the end', async function () {
+        // Refresh pages
+        await page1.goto('about:blank');
+        await page2.goto('about:blank');
+
+        const sessionId = 'test-session-odd-pages';
+
+        // Client 1 connects (left)
+        await page1.goto('http://localhost:3000');
+        await page1.type('#session-id', sessionId);
+        await page1.select('#role-select', 'left');
+        await page1.click('#join-btn');
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Client 2 connects (right)
+        await page2.goto('http://localhost:3000');
+        await page2.type('#session-id', sessionId);
+        await page2.select('#role-select', 'right');
+        await page2.click('#join-btn');
+
+        // Wait for connection
+        await page1.waitForFunction(
+            () => document.getElementById('status').innerText.includes('Peer Connected'),
+            { timeout: 10000 }
+        );
+        await page2.waitForFunction(
+            () => document.getElementById('status').innerText.includes('Peer Connected'),
+            { timeout: 10000 }
+        );
+
+        // Upload 4 images, which translates to 5 pages since the first is a cover
+        const jszip = require('jszip');
+        const zip = new jszip();
+
+        const pixelData = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
+        zip.file("1.png", pixelData);
+        zip.file("2.png", pixelData);
+        zip.file("3.png", pixelData);
+        zip.file("4.png", pixelData);
+
+        const content = await zip.generateAsync({type:"nodebuffer"});
+        const cbzPath = path.resolve(__dirname, 'test-odd.cbz');
+        fs.writeFileSync(cbzPath, content);
+
+        const fileInput = await page1.$('#file-input');
+        await fileInput.uploadFile(cbzPath);
+
+        // Wait for page2 to receive files
+        await page2.waitForFunction(
+            () => document.getElementById('status').innerText.includes('Received') || document.getElementById('status').innerText.includes('Page '),
+            { timeout: 10000 }
+        );
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Navigate to the end (pages 4 and 5)
+        await page1.click('#nav-right');
+        await new Promise(resolve => setTimeout(resolve, 500));
+        await page1.click('#nav-right');
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Verify both pages are at the end
+        expect(await page1.$eval('#status', el => el.innerText)).to.include('Page 5 of 5');
+        expect(await page2.$eval('#status', el => el.innerText)).to.include('Page 5 of 5');
+
+        // Click next on the right browser
+        await page2.click('#nav-right');
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Verify both pages REMAIN at the end and no indexing shifts occurred
+        expect(await page1.$eval('#status', el => el.innerText)).to.include('Page 5 of 5');
+        expect(await page2.$eval('#status', el => el.innerText)).to.include('Page 5 of 5');
+    });
 });

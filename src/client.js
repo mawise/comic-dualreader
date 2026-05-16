@@ -187,24 +187,26 @@ document.getElementById('join-btn').addEventListener('click', () => {
 function turnPage(direction) {
     if (pages.length === 0) return;
 
-    let newIndex = currentPageIndex;
+    let baseIndex = (role === 'left') ? currentPageIndex : currentPageIndex - 1;
+
     if (direction === 'next') {
-        newIndex = Math.min(pages.length - 1, currentPageIndex + 2);
+        baseIndex += 2;
     } else if (direction === 'prev') {
-        newIndex = Math.max(0, currentPageIndex - 2);
+        baseIndex -= 2;
     }
 
-    if (newIndex !== currentPageIndex) {
-        // If I am right page, my currentPageIndex is already +1 from the real sync index.
-        // Let's normalize to the "left" base index to send the command.
-        let baseIndex = (role === 'left') ? newIndex : newIndex - 1;
-        baseIndex = Math.max(0, baseIndex);
+    let maxBaseIndex = pages.length % 2 === 0 ? pages.length - 2 : pages.length - 1;
+    maxBaseIndex = Math.max(0, maxBaseIndex);
 
+    let newBaseIndex = Math.min(maxBaseIndex, Math.max(0, baseIndex));
+    let oldBaseIndex = (role === 'left') ? currentPageIndex : currentPageIndex - 1;
+
+    if (newBaseIndex !== oldBaseIndex) {
         // Update my own display
-        updateDisplay(role === 'left' ? baseIndex : baseIndex + 1);
+        updateDisplay(role === 'left' ? newBaseIndex : newBaseIndex + 1);
 
         if (peer && peer.connected) {
-            peer.send(JSON.stringify({ type: 'sync', index: baseIndex }));
+            peer.send(JSON.stringify({ type: 'sync', index: newBaseIndex }));
         }
     }
 }
